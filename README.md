@@ -6,4 +6,10 @@ This repository contains the source code for the paper ["<u>place holder</u>"]()
 
 We introduce **sci-retriever**, 
 
+## Installation 
+
+```bash
+pip install 
+```
+
 Step 1 retrieve
