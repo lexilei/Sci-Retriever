@@ -13,10 +13,10 @@ pip install
 ```
 step 0 preprocess
 generate question embeddings for all questions
-save by index
+save by index (so that we don't need to generate qembs everytime we run)
 
 Step 1 retrieve
-given a graph, a question, and a sample answer, we perform the following:
+given a graph, a q emb, and a sample answer, we perform the following:
 use grag to retrieve optimal subgraph
 then use bm25 to retrieve relevent passsages
 save the optimal subgraph and relevent passages
