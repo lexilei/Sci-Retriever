@@ -3,13 +3,13 @@ import numpy as np
 from pcst_fast import pcst_fast
 from torch_geometric.data.data import Data
 
-
-def retrieval_via_pcst(graph, q_emb, textual_nodes, textual_edges, topk=3, topk_e=3, cost_e=0.5):
+# def retrieval_via_pcst(graph, q_emb, textual_nodes, textual_edges, topk=3, topk_e=3, cost_e=0.5):
+def retrieval_via_pcst(graph, q_emb, topk=3, topk_e=3, cost_e=0.5):
     c = 0.01
-    if len(textual_nodes) == 0 or len(textual_edges) == 0:
-        desc = textual_nodes.to_csv(index=False) + '\n' + textual_edges.to_csv(index=False, columns=['src', 'edge_attr', 'dst'])
-        graph = Data(x=graph.x, edge_index=graph.edge_index, edge_attr=graph.edge_attr, num_nodes=graph.num_nodes)
-        return graph, desc
+    # if len(textual_nodes) == 0 or len(textual_edges) == 0:
+    #     desc = textual_nodes.to_csv(index=False) + '\n' + textual_edges.to_csv(index=False, columns=['src', 'edge_attr', 'dst'])
+    #     graph = Data(x=graph.x, edge_index=graph.edge_index, edge_attr=graph.edge_attr, num_nodes=graph.num_nodes)
+    #     return graph, desc
 
     root = -1  # unrooted
     num_clusters = 1
@@ -83,9 +83,9 @@ def retrieval_via_pcst(graph, q_emb, textual_nodes, textual_edges, topk=3, topk_
     edge_index = graph.edge_index[:, selected_edges]
     selected_nodes = np.unique(np.concatenate([selected_nodes, edge_index[0].numpy(), edge_index[1].numpy()]))
 
-    n = textual_nodes.iloc[selected_nodes]
-    e = textual_edges.iloc[selected_edges]
-    desc = n.to_csv(index=False)+'\n'+e.to_csv(index=False, columns=['src', 'edge_attr', 'dst'])
+    # n = textual_nodes.iloc[selected_nodes]
+    # e = textual_edges.iloc[selected_edges]
+    # desc = n.to_csv(index=False)+'\n'+e.to_csv(index=False, columns=['src', 'edge_attr', 'dst'])
 
     mapping = {n: i for i, n in enumerate(selected_nodes.tolist())}
 
@@ -96,4 +96,5 @@ def retrieval_via_pcst(graph, q_emb, textual_nodes, textual_edges, topk=3, topk_
     edge_index = torch.LongTensor([src, dst])
     data = Data(x=x, edge_index=edge_index, edge_attr=edge_attr, num_nodes=len(selected_nodes))
 
-    return data, desc
+    return data
+    # , desc

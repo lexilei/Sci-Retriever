@@ -6,6 +6,7 @@ import datasets
 from tqdm import tqdm
 from src.dataset.utils.retrieval import retrieval_via_pcst
 from bm25 import BM25
+from src.utils.lm_modeling import load_model, load_text2embedding
 
 model_name = 'sbert'
 path = 'dataset'
@@ -60,20 +61,28 @@ class CitationNetworkDataset(Dataset):
 
 
 def preprocess():
-    os.makedirs(cached_desc, exist_ok=True)
-    os.makedirs(cached_graph, exist_ok=True)
-    dataset = datasets.load_dataset("rmanluo/RoG-webqsp")
-    dataset = datasets.concatenate_datasets([dataset['train'], dataset['validation'], dataset['test']])
+    # os.makedirs(cached_desc, exist_ok=True)
+    # os.makedirs(cached_graph, exist_ok=True)
+    # dataset = datasets.load_dataset("rmanluo/RoG-webqsp")
+    # dataset = datasets.concatenate_datasets([dataset['train'], dataset['validation'], dataset['test']])
+    dataset = pd.read_csv('/home/ubuntu/SciQA/dataset/processed_data/qa_pairs.csv')
+    model, tokenizer, device = load_model[model_name]()
+    text2embedding = load_text2embedding[model_name]
 
-    q_embs = torch.load(f'{path}/q_embs.pt')
+    # encode questions
+    print('Encoding questions...')
+    q_embs = text2embedding(model, tokenizer, device, questions)
+    # torch.save(q_embs, f'{path}/q_embs.pt')
+    # q_embs = torch.load(f'{path}/q_embs.pt')
     for index in tqdm(range(len(dataset))):
         if os.path.exists(f'{cached_graph}/{index}.pt'):
             continue
-        graph = torch.load(f'{path_graphs}/{index}.pt')
-        nodes = pd.read_csv(f'{path_nodes}/{index}.csv')
-        edges = pd.read_csv(f'{path_edges}/{index}.csv')
+        graph = torch.load(f'/home/ubuntu/Sci-Retriever/object-detection-on-coco-o.pt')
+        # nodes = pd.read_csv(f'{path_nodes}/{index}.csv')
+        # edges = pd.read_csv(f'{path_edges}/{index}.csv')
         q_emb = q_embs[index]
-        subg, desc = retrieval_via_pcst(graph, q_emb, nodes, edges, topk=3, topk_e=5, cost_e=0.5)
+        # subg, desc = retrieval_via_pcst(graph, q_emb, nodes, edges, topk=3, topk_e=5, cost_e=0.5)
+        subg=retrieval_via_pcst(graph, q_emb, topk=3, topk_e=5, cost_e=0.5)
         BM25(q_emb,nodes,topk=3) #加了一个bm25here
         torch.save(subg, f'{cached_graph}/{index}.pt')
         open(f'{cached_desc}/{index}.txt', 'w').write(desc)
