@@ -1,6 +1,15 @@
+def converter(subg):
+  nodes = subg.x
+  nodes_str = nodes.tolist()  # 将张量转换为列表，然后转换为字符串
+  nodes_str = [str(node) for node in nodes_str]
 
+  edge_attributes = subg.edge_attr
+  edge_attributes_str = edge_attributes.tolist()  # 将张量转换为列表，然后转换为字符串
+  edge_attributes_str = [str(attr) for attr in edge_attributes_str]
+  return nodes_str,edge_attributes_str
 
-def BM25(query, contexts, topk):
+def BM25(query, subg, topk):
+  contexts,edges=converter(subg)
   # Retrieve with BM25
   tokenizer = AutoTokenizer.from_pretrained('facebook/spar-wiki-bm25-lexmodel-query-encoder')
   query_encoder = AutoModel.from_pretrained('facebook/spar-wiki-bm25-lexmodel-query-encoder')

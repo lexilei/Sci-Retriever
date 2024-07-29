@@ -71,19 +71,23 @@ def preprocess():
 
     # encode questions
     print('Encoding questions...')
-    q_embs = text2embedding(model, tokenizer, device, questions)
+    # q_embs = text2embedding(model, tokenizer, device, questions)
     # torch.save(q_embs, f'{path}/q_embs.pt')
     # q_embs = torch.load(f'{path}/q_embs.pt')
     for index in tqdm(range(len(dataset))):
         if os.path.exists(f'{cached_graph}/{index}.pt'):
             continue
-        graph = torch.load(f'/home/ubuntu/Sci-Retriever/object-detection-on-coco-o.pt')
+        data=dataset.iloc[index]
+        graph = torch.load(f'/home/ubuntu/Sci-Retriever/{data['graph']}.pt')
         # nodes = pd.read_csv(f'{path_nodes}/{index}.csv')
         # edges = pd.read_csv(f'{path_edges}/{index}.csv')
-        q_emb = q_embs[index]
+        question=data['question']
+        answer=data['answer']
+        q_embs = text2embedding(model, tokenizer, device, question)
         # subg, desc = retrieval_via_pcst(graph, q_emb, nodes, edges, topk=3, topk_e=5, cost_e=0.5)
         subg=retrieval_via_pcst(graph, q_emb, topk=3, topk_e=5, cost_e=0.5)
-        BM25(q_emb,nodes,topk=3) #加了一个bm25here
+
+        BM25(question,subg,topk=3) #加了一个bm25here
         torch.save(subg, f'{cached_graph}/{index}.pt')
         open(f'{cached_desc}/{index}.txt', 'w').write(desc)
 
