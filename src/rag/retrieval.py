@@ -3,7 +3,6 @@ import numpy as np
 from pcst_fast import pcst_fast
 from torch_geometric.data.data import Data
 
-# def retrieval_via_pcst(graph, q_emb, textual_nodes, textual_edges, topk=3, topk_e=3, cost_e=0.5):
 def retrieval_via_pcst(graph, q_emb, topk=3, topk_e=3, cost_e=0.5):
     c = 0.01
     # if len(textual_nodes) == 0 or len(textual_edges) == 0:
@@ -16,10 +15,7 @@ def retrieval_via_pcst(graph, q_emb, topk=3, topk_e=3, cost_e=0.5):
     pruning = 'gw'
     verbosity_level = 0
     if topk > 0:
-        print(q_emb.shape)
-        print(graph.x)
-        # print(torch.tensor(graph.x).shape)
-        n_prizes = torch.nn.CosineSimilarity(dim=-1)(q_emb, torch.tensor(graph.x))
+        n_prizes = torch.nn.CosineSimilarity(dim=-1)(q_emb, graph.x)
         topk = min(topk, graph.num_nodes)
         _, topk_n_indices = torch.topk(n_prizes, topk, largest=True)
 
@@ -93,7 +89,7 @@ def retrieval_via_pcst(graph, q_emb, topk=3, topk_e=3, cost_e=0.5):
     mapping = {n: i for i, n in enumerate(selected_nodes.tolist())}
 
     x = graph.x[selected_nodes]
-    edge_attr = graph.edge_attr[selected_edges]
+    edge_attr = graph.edge_attr#[selected_edges]
     src = [mapping[i] for i in edge_index[0].tolist()]
     dst = [mapping[i] for i in edge_index[1].tolist()]
     edge_index = torch.LongTensor([src, dst])
