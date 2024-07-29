@@ -18,7 +18,7 @@ def retrieval_via_pcst(graph, q_emb, topk=3, topk_e=3, cost_e=0.5):
     if topk > 0:
         print(q_emb.shape)
         print(graph.x)
-        print(torch.tensor(graph.x).shape)
+        # print(torch.tensor(graph.x).shape)
         n_prizes = torch.nn.CosineSimilarity(dim=-1)(q_emb, torch.tensor(graph.x))
         topk = min(topk, graph.num_nodes)
         _, topk_n_indices = torch.topk(n_prizes, topk, largest=True)
@@ -29,7 +29,7 @@ def retrieval_via_pcst(graph, q_emb, topk=3, topk_e=3, cost_e=0.5):
         n_prizes = torch.zeros(graph.num_nodes)
 
     if topk_e > 0:
-        e_prizes = torch.nn.CosineSimilarity(dim=-1)(q_emb, graph.edge_attr)
+        e_prizes = torch.nn.CosineSimilarity(dim=-1)(q_emb, torch.empty(0))
         topk_e = min(topk_e, e_prizes.unique().size(0))
 
         topk_e_values, _ = torch.topk(e_prizes.unique(), topk_e, largest=True)
