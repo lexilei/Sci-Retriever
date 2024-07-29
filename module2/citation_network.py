@@ -74,7 +74,7 @@ def preprocess():
         edges = pd.read_csv(f'{path_edges}/{index}.csv')
         q_emb = q_embs[index]
         subg, desc = retrieval_via_pcst(graph, q_emb, nodes, edges, topk=3, topk_e=5, cost_e=0.5)
-        BM35(q_emb,nodes,topk=3) #加了一个bm25here
+        BM25(q_emb,nodes,topk=3) #加了一个bm25here
         torch.save(subg, f'{cached_graph}/{index}.pt')
         open(f'{cached_desc}/{index}.txt', 'w').write(desc)
 
