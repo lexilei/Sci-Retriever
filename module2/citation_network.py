@@ -65,7 +65,7 @@ def preprocess():
     # os.makedirs(cached_graph, exist_ok=True)
     # dataset = datasets.load_dataset("rmanluo/RoG-webqsp")
     # dataset = datasets.concatenate_datasets([dataset['train'], dataset['validation'], dataset['test']])
-    dataset = pd.read_csv('Sci-Retriever/sampleqa.csv')
+    dataset = pd.read_csv('/home/ubuntu/Sci-Retriever/sampleqa.csv')
     model, tokenizer, device = load_model[model_name]()
     text2embedding = load_text2embedding[model_name]
 
@@ -78,12 +78,16 @@ def preprocess():
         if os.path.exists(f'{cached_graph}/{index}.pt'):
             continue
         data=dataset.iloc[index]
-        graph = torch.load(f'/home/ubuntu/Sci-Retriever/{data['graph']}.pt')
+        graph_name=data['graph']
+        graph = torch.load('/home/ubuntu/Sci-Retriever/object-detection-on-coco-o.pt')
+        print(graph.x)
+        print(graph.edge_index)
+        print(graph.edge_attr)
         # nodes = pd.read_csv(f'{path_nodes}/{index}.csv')
         # edges = pd.read_csv(f'{path_edges}/{index}.csv')
         question=data['question']
         answer=data['answer']
-        q_embs = text2embedding(model, tokenizer, device, question)
+        q_emb = text2embedding(model, tokenizer, device, question)
         # subg, desc = retrieval_via_pcst(graph, q_emb, nodes, edges, topk=3, topk_e=5, cost_e=0.5)
         subg=retrieval_via_pcst(graph, q_emb, topk=3, topk_e=5, cost_e=0.5)
 

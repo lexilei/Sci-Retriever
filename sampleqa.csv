@@ -1,14 +1,4 @@
 graph,question,answer
-object-detection-on-coco-minival,"Which paper introduces collaborative hybrid assignments training for object detection on COCO minival?",DETRs with Collaborative Hybrid Assignments Training
-object-detection-on-coco-minival,"What method proposes all-in-one pre-training via maximizing multi-modal mutual information for COCO minival?",Towards All-in-one Pre-training via Maximizing Multi-modal Mutual Information
-object-detection-on-coco-minival,"Which paper introduces a strong and reproducible object detector using only public datasets for COCO minival?",A Strong and Reproducible Object Detector with Only Public Datasets
-object-detection-on-coco-minival,"What approach uses reversible column networks for COCO minival detection?",Reversible Column Networks
-object-detection-on-coco-minival,"Which paper proposes a general object foundation model for images and videos at scale, tested on COCO minival?",General Object Foundation Model for Images and Videos at Scale
-object-detection-on-coco-minival,"What method introduces end-to-end semi-supervised object detection with soft teacher for COCO minival?",End-to-End Semi-Supervised Object Detection with Soft Teacher
-object-detection-on-coco-minival,"Which paper presents universal instance perception as object discovery and retrieval for COCO minival?",Universal Instance Perception as Object Discovery and Retrieval
-object-detection-on-coco-minival,"What approach adapts vision transformers for dense predictions on COCO minival?",Vision Transformer Adapter for Dense Predictions
-object-detection-on-coco-minival,"What's the highest reported box AP for object detection on COCO minival?",65.9
-object-detection-on-coco-minival,"Which model achieves 60.6 box AP on COCO minival?",UNINEXT-H
 object-detection-on-coco-o,"Which paper argues that NMS strikes back in object detection on COCO-O?",NMS Strikes Back
 object-detection-on-coco-o,"What method proposes a ConvNet for the 2020s, evaluated on COCO-O?",A ConvNet for the 2020s
 object-detection-on-coco-o,"Which paper adapts vision transformers for dense predictions on COCO-O?",Vision Transformer Adapter for Dense Predictions
@@ -19,13 +9,3 @@ object-detection-on-coco-o,"Which paper introduces probabilistic two-stage detec
 object-detection-on-coco-o,"What's the highest reported Average mAP for object detection on COCO-O?",48.5
 object-detection-on-coco-o,"Which model achieves 37.5 Average mAP on COCO-O?",ConvNeXt-XL
 object-detection-on-coco-o,"What's the Effective Robustness of the FIBER-B model on COCO-O?",11.43
-object-detection-on-coco,"Which paper introduces collaborative hybrid assignments training for object detection on COCO?",DETRs with Collaborative Hybrid Assignments Training
-object-detection-on-coco,"What method proposes all-in-one pre-training via maximizing multi-modal mutual information for COCO?",Towards All-in-one Pre-training via Maximizing Multi-modal Mutual Information
-object-detection-on-coco,"Which paper introduces a strong and reproducible object detector using only public datasets for COCO?",A Strong and Reproducible Object Detector with Only Public Datasets
-object-detection-on-coco,"What approach uses reversible column networks for COCO detection?",Reversible Column Networks
-object-detection-on-coco,"Which paper argues that NMS strikes back in object detection on COCO?",NMS Strikes Back
-object-detection-on-coco,"What's the highest reported box mAP for object detection on COCO?",66.0
-object-detection-on-coco,"Which model achieves 64.8 box mAP on COCO?",Co-DETR
-object-detection-on-coco,"What's the box mAP of the DETA model on COCO?",63.5
-object-detection-on-coco,"How many papers report results for AP50 and AP75 on COCO?",1
-object-detection-on-coco,"Which paper reports results for APS, APM, and APL on COCO?",NMS Strikes Back

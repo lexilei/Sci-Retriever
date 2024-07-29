@@ -16,7 +16,10 @@ def retrieval_via_pcst(graph, q_emb, topk=3, topk_e=3, cost_e=0.5):
     pruning = 'gw'
     verbosity_level = 0
     if topk > 0:
-        n_prizes = torch.nn.CosineSimilarity(dim=-1)(q_emb, graph.x)
+        print(q_emb.shape)
+        print(graph.x)
+        print(torch.tensor(graph.x).shape)
+        n_prizes = torch.nn.CosineSimilarity(dim=-1)(q_emb, torch.tensor(graph.x))
         topk = min(topk, graph.num_nodes)
         _, topk_n_indices = torch.topk(n_prizes, topk, largest=True)
 
