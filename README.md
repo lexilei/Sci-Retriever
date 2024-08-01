@@ -23,3 +23,7 @@ save the optimal subgraph and relevent passages
 
 step 2 llm
 provide llm with the prompt
+
+qa pair+chatgpt 看retrieve出来的东西准不准
+
+correct: answer 

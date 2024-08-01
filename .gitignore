@@ -64,3 +64,8 @@ output/
 wandb/
 
 .vscode/
+
+#sensitive info
+.env
+src/rag/test.ipynb
+src/rag/test.ipynb
