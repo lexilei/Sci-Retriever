@@ -4,6 +4,8 @@ from pcst_fast import pcst_fast
 from torch_geometric.data.data import Data
 import pandas as pd
 from src.utils.lm_modeling import load_model, load_text2embedding
+from transformers import AutoTokenizer, AutoModel
+import re
 
 
 def retrieval_via_pcst(graph, textual_nodes, q_emb, topk=3, topk_e=3, cost_e=0.5):
@@ -20,8 +22,9 @@ def retrieval_via_pcst(graph, textual_nodes, q_emb, topk=3, topk_e=3, cost_e=0.5
     if topk > 0:
         n_prizes = torch.nn.CosineSimilarity(dim=-1)(q_emb, graph.x)
         topk = min(topk, graph.num_nodes)
+        print(topk)
         _, topk_n_indices = torch.topk(n_prizes, topk, largest=True)
-
+        print(topk_n_indices)
         n_prizes = torch.zeros_like(n_prizes)
         n_prizes[topk_n_indices] = torch.arange(topk, 0, -1).float()
     else:
@@ -84,7 +87,7 @@ def retrieval_via_pcst(graph, textual_nodes, q_emb, topk=3, topk_e=3, cost_e=0.5
 
     edge_index = graph.edge_index[:, selected_edges]
     selected_nodes = np.unique(np.concatenate([selected_nodes, edge_index[0].numpy(), edge_index[1].numpy()]))
-
+    print(selected_nodes)
     textual_nodes=pd.DataFrame(textual_nodes)
     n = textual_nodes.iloc[selected_nodes]
     # e = textual_edges.iloc[selected_edges]
@@ -98,31 +101,43 @@ def retrieval_via_pcst(graph, textual_nodes, q_emb, topk=3, topk_e=3, cost_e=0.5
     dst = [mapping[i] for i in edge_index[1].tolist()]
     edge_index = torch.LongTensor([src, dst])
     data = Data(x=x, edge_index=edge_index, edge_attr=edge_attr, num_nodes=len(selected_nodes))
+    return data, desc
 
 def BM25(query, contexts, topk):
-  
-  # contexts=converter(subg)
-  # Retrieve with BM25
-  contexts=contexts.split('.')
-  print(contexts)
-  tokenizer = AutoTokenizer.from_pretrained('facebook/spar-wiki-bm25-lexmodel-query-encoder')
-  query_encoder = AutoModel.from_pretrained('facebook/spar-wiki-bm25-lexmodel-query-encoder')
-  context_encoder = AutoModel.from_pretrained('facebook/spar-wiki-bm25-lexmodel-context-encoder')
+    text_column = contexts.columns[0]
+    text_list = contexts[text_column].tolist()
+    # contexts=converter(subg)
+    # Retrieve with BM25
+    
 
-  query_input = tokenizer(query, padding=True, truncation=True, return_tensors='pt')
-  ctx_input = tokenizer(contexts, padding=True, truncation=True, return_tensors='pt')
+# 将每个文本条目分割成句子
+    def split_into_sentences(text):
+        # 使用正则表达式进行简单的句子分割，可以根据需要调整
+        sentences = re.split(r'(?<!\w\.\w.)(?<![A-Z][a-z]\.)(?<=\.|\?)\s', text)
+        return sentences
 
-  # Compute embeddings: take the last-layer hidden state of the [CLS] token
-  query_emb = query_encoder(**query_input).last_hidden_state[:, 0, :]
-  ctx_emb = context_encoder(**ctx_input).last_hidden_state[:, 0, :]
+    # 转换为句子的列表
+    sentences_list = [sentence for text in text_list for sentence in split_into_sentences(text)]
 
-  scores = query_emb @ ctx_emb.T
-  _, topk_n_indices = torch.topk(scores, topk, largest=True)
-  print(topk_n_indices[0].tolist())
-  selected_contexts = " ".join([contexts[idx] for idx in topk_n_indices[0].tolist()])
-    # query[q_id] = selected_contexts + " " + query[q_id]
+    print(sentences_list)
+    tokenizer = AutoTokenizer.from_pretrained('facebook/spar-wiki-bm25-lexmodel-query-encoder')
+    query_encoder = AutoModel.from_pretrained('facebook/spar-wiki-bm25-lexmodel-query-encoder')
+    context_encoder = AutoModel.from_pretrained('facebook/spar-wiki-bm25-lexmodel-context-encoder')
 
-  return selected_contexts
+    query_input = tokenizer(query, padding=True, truncation=True, return_tensors='pt')
+    ctx_input = tokenizer(sentences_list, padding=True, truncation=True, return_tensors='pt')
+
+    # Compute embeddings: take the last-layer hidden state of the [CLS] token
+    query_emb = query_encoder(**query_input).last_hidden_state[:, 0, :]
+    ctx_emb = context_encoder(**ctx_input).last_hidden_state[:, 0, :]
+
+    scores = query_emb @ ctx_emb.T
+    _, topk_n_indices = torch.topk(scores, topk, largest=True)
+    print(topk_n_indices[0].tolist())
+    selected_contexts = " ".join([sentences_list[idx] for idx in topk_n_indices[0].tolist()])
+        # query[q_id] = selected_contexts + " " + query[q_id]
+
+    return selected_contexts
 
 
 model_name = 'sbert'
@@ -143,4 +158,16 @@ print("finished generation now saving",graph.abstract)
 torch.save(abstract_emb,"/home/ubuntu/Sci-Retriever/dataset/a.pt")
 graph.x=abstract_emb
 subg,desc=retrieval_via_pcst(graph, graph.abstract, q_emb, topk=3, topk_e=0, cost_e=0.5)
-print("question emb")
+file_name = "desc.txt"
+with open(file_name, 'w') as file:
+    file.write(desc.to_string(index=False))
+print(desc)
+answer= BM25(question, desc, topk=5)
+print(answer)
+
+#python src/rag/a.py
+file_name = "output.txt"
+with open(file_name, 'w') as file:
+    file.write(answer)
+
+print(f"Text successfully saved to {file_name}")
