@@ -6,6 +6,7 @@ import pandas as pd
 from src.utils.lm_modeling import load_model, load_text2embedding
 from transformers import AutoTokenizer, AutoModel
 import re
+from openai import OpenAI
 
 
 def retrieval_via_pcst(graph, textual_nodes, q_emb, topk=3, topk_e=3, cost_e=0.5):
@@ -148,26 +149,51 @@ dataset = pd.read_csv('/home/ubuntu/Sci-Retriever/dataset/sampleqa.csv')
 model, tokenizer, device = load_model[model_name]()
 text2embedding = load_text2embedding[model_name]
 graph=torch.load('/home/ubuntu/Sci-Retriever/dataset/3d-point-cloud-classification-on-scanobjectnn.pt')
-data=dataset.iloc[0]
-print(Data)
-question=data['question']
-print("question emb",question)
-q_emb = text2embedding(model, tokenizer, device, question)
-abstract_emb = text2embedding(model, tokenizer, device, graph.abstract)
-print("finished generation now saving",graph.abstract)
-torch.save(abstract_emb,"/home/ubuntu/Sci-Retriever/dataset/a.pt")
+abstract_emb=torch.load("/home/ubuntu/Sci-Retriever/dataset/a.pt")
 graph.x=abstract_emb
-subg,desc=retrieval_via_pcst(graph, graph.abstract, q_emb, topk=3, topk_e=0, cost_e=0.5)
-file_name = "desc.txt"
-with open(file_name, 'w') as file:
-    file.write(desc.to_string(index=False))
-print(desc)
-answer= BM25(question, desc, topk=5)
-print(answer)
+for index in range(len(dataset)):
+    data=dataset.iloc[index]
+    # print(data)
+    question=data['question']
+    answer=data['answer']
+    print("question emb",question)
+    q_emb = text2embedding(model, tokenizer, device, question)
+    # abstract_emb = text2embedding(model, tokenizer, device, graph.abstract)
+    
+# print("finished generation now saving",graph.abstract)
+# torch.save(abstract_emb,"/home/ubuntu/Sci-Retriever/dataset/a.pt")
+    
+    subg,desc=retrieval_via_pcst(graph, graph.abstract, q_emb, topk=3, topk_e=0, cost_e=0.5)
+# file_name = "desc.txt"
+# with open(file_name, 'w') as file:
+#     file.write(desc.to_string(index=False))
+# print(desc)
+    result= BM25(question, desc, topk=3)
+# print(answer)
 
-#python src/rag/a.py
-file_name = "output.txt"
-with open(file_name, 'w') as file:
-    file.write(answer)
+# #python src/rag/a.py
+# file_name = "output.txt"
+# with open(file_name, 'w') as file:
+#     file.write(answer)
 
-print(f"Text successfully saved to {file_name}")
+# print(f"Text successfully saved to {file_name}")
+
+
+    client = OpenAI()
+# file_name = "output.txt"
+
+# # Read the file content as a string
+# with open(file_name, 'r') as file:
+#     file_content = file.read()
+
+    completion = client.chat.completions.create(
+    model="gpt-4o",
+    messages=[
+        {"role": "system", "content": "Answer the folowing question based on the information given."},
+        {"role": "user", "content": f"{question} {result}"}
+    ]
+    )
+    
+    file_name = "output.txt"
+    with open(f"/home/ubuntu/Sci-Retriever/dataset/chatgptanswers/{index}.txt", 'w') as file:
+        file.write(completion.choices[0].message.content)
