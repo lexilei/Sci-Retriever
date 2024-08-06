@@ -88,7 +88,7 @@ def retrieval_via_pcst(graph, textual_nodes, q_emb, topk=3, topk_e=3, cost_e=0.5
 
     edge_index = graph.edge_index[:, selected_edges]
     selected_nodes = np.unique(np.concatenate([selected_nodes, edge_index[0].numpy(), edge_index[1].numpy()]))
-    print(selected_nodes)
+    # print(selected_nodes)
     textual_nodes=pd.DataFrame(textual_nodes)
     n = textual_nodes.iloc[selected_nodes]
     # e = textual_edges.iloc[selected_edges]
@@ -120,7 +120,7 @@ def BM25(query, contexts, topk):
     # 转换为句子的列表
     sentences_list = [sentence for text in text_list for sentence in split_into_sentences(text)]
 
-    print(sentences_list)
+    # print(sentences_list)
     tokenizer = AutoTokenizer.from_pretrained('facebook/spar-wiki-bm25-lexmodel-query-encoder')
     query_encoder = AutoModel.from_pretrained('facebook/spar-wiki-bm25-lexmodel-query-encoder')
     context_encoder = AutoModel.from_pretrained('facebook/spar-wiki-bm25-lexmodel-context-encoder')
@@ -134,7 +134,7 @@ def BM25(query, contexts, topk):
 
     scores = query_emb @ ctx_emb.T
     _, topk_n_indices = torch.topk(scores, topk, largest=True)
-    print(topk_n_indices[0].tolist())
+    # print(topk_n_indices[0].tolist())
     selected_contexts = " ".join([sentences_list[idx] for idx in topk_n_indices[0].tolist()])
         # query[q_id] = selected_contexts + " " + query[q_id]
 
@@ -144,6 +144,7 @@ def BM25(query, contexts, topk):
 model_name = 'sbert'
 path = 'Sci-Retriever/dataset/3d-point-cloud-classification-on-scanobjectnn.pt'
 
+score=0
 
 dataset = pd.read_csv('/home/ubuntu/Sci-Retriever/dataset/sampleqa.csv')
 model, tokenizer, device = load_model[model_name]()
@@ -168,7 +169,7 @@ for index in range(len(dataset)):
 # with open(file_name, 'w') as file:
 #     file.write(desc.to_string(index=False))
 # print(desc)
-    result= BM25(question, desc, topk=3)
+    result= BM25(question, desc, topk=10)
 # print(answer)
 
 # #python src/rag/a.py
@@ -197,3 +198,7 @@ for index in range(len(dataset)):
     file_name = "output.txt"
     with open(f"/home/ubuntu/Sci-Retriever/dataset/chatgptanswers/{index}.txt", 'w') as file:
         file.write(completion.choices[0].message.content)
+    if answer in completion.choices[0].message.content:
+        score+=1
+
+print(score/len(dataset))
