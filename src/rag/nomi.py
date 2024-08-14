@@ -1,3 +1,4 @@
+from nomic import embed
 import torch
 import numpy as np
 from pcst_fast import pcst_fast
@@ -11,7 +12,7 @@ import warnings
 warnings.filterwarnings("ignore")
 
 # from sentence_transformers import SentenceTransformer
-from nomic import embed
+
 
 def retrieval_via_pcst(graph, textual_nodes, q_emb, topk=3, topk_e=3, cost_e=0.5):
     c = 0.01
@@ -180,18 +181,20 @@ text2embedding = load_text2embedding[model_name]
 graph=torch.load('/home/ubuntu/Sci-Retriever/dataset/3d-point-cloud-classification-on-scanobjectnn.pt')
 
 
-abstract_emb= embed.text(
-    texts=graph.abstract,
-    model='nomic-embed-text-v1.5',
-    task_type='search_document',
-    dimensionality=256,
-)
+# abstract_emb= embed.text(
+#     texts=graph.abstract,
+#     model='nomic-embed-text-v1.5',
+#     task_type='search_document',
+#     dimensionality=768,
+# )
 
-
-
+# torch.save(abstract_emb, 'nomic_abs_emb_768.pt')
+abstract_emb=torch.load('nomic_abs_emb_768.pt')['embeddings']
+abstract_emb=torch.tensor(abstract_emb)
+print(type(abstract_emb))
 graph.x=abstract_emb
 maxscore=0
-for topk in [5]:
+for topk in [20]:
     score=0
     for index in range(len(dataset)):
         data=dataset.iloc[index]
@@ -201,41 +204,38 @@ for topk in [5]:
         # q_emb = text2embedding(model, tokenizer, device, "The unstructured nature of point clouds demands that local aggregation be adaptive to different local structures.")
         # abstract_emb = text2embedding(model, tokenizer, device, graph.abstract)
         q_emb= embed.text(
-            texts=question,
+            texts=["DeLA (Decoupled Local Aggregation)"],
             model='nomic-embed-text-v1.5',
             task_type='search_query',
-            dimensionality=256,
+            dimensionality=768,
         )
-        print(q_emb)
-    # print("finished generation now saving",graph.abstract)
-    # torch.save(abstract_emb,"/home/ubuntu/Sci-Retriever/dataset/a.pt")
-        
-        subg,desc=retrieval_via_pcst(graph, graph.title, q_emb, topk=10, topk_e=0, cost_e=0.5)
-    # file_name = "desc.txt"
-    # with open(file_name, 'w') as file:
-    #     file.write(desc.to_string(index=False))
+        q_emb=q_emb['embeddings']
+        q_emb=torch.tensor(q_emb)
+
+        subg,desc=retrieval_via_pcst(graph, graph.title, q_emb, topk=50, topk_e=0, cost_e=0.5)
+
         print("running bm25")
         print(desc)
-        # result= BM25(question, desc, 50)
-        result=desc
-        with open(f"/home/ubuntu/Sci-Retriever/temp.txt", 'w') as file:
-            file.write(result)
 
-        client = OpenAI()
-        completion = client.chat.completions.create(
-        model="gpt-4o",
-        messages=[
-            {"role": "system", "content": "Answer the folowing question based on the information given."},
-            {"role": "user", "content": f"{question} {result}"}
-        ]
-        )
+    #     result=desc
+    #     with open(f"/home/ubuntu/Sci-Retriever/temp.txt", 'w') as file:
+    #         file.write(result)
+
+    #     client = OpenAI()
+    #     completion = client.chat.completions.create(
+    #     model="gpt-4o",
+    #     messages=[
+    #         {"role": "system", "content": "Answer the folowing question based on the information given."},
+    #         {"role": "user", "content": f"{question} {result}"}
+    #     ]
+    #     )
         
-        file_name = "output.txt"
-        with open(f"/home/ubuntu/Sci-Retriever/dataset/chatgptanswers/{index}.txt", 'w') as file:
-            file.write(completion.choices[0].message.content)
-        if answer in completion.choices[0].message.content:
-            score+=1
-        if score>maxscore:
-            maxscore=score
-            maxk=topk
-    print(score/len(dataset))
+    #     file_name = "output.txt"
+    #     with open(f"/home/ubuntu/Sci-Retriever/dataset/chatgptanswers/{index}.txt", 'w') as file:
+    #         file.write(completion.choices[0].message.content)
+    #     if answer in completion.choices[0].message.content:
+    #         score+=1
+    #     if score>maxscore:
+    #         maxscore=score
+    #         maxk=topk
+    # print(score/len(dataset))
