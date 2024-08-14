@@ -183,9 +183,9 @@ for topk in [5]:
     for index in range(len(dataset)):
         data=dataset.iloc[index]
         # print(data)
-        question=data['question']
+        question=" The success of deep learning in vision can be attributed to: (a) models with high capacity; (b) increased computational power; and (c) availability of large-scale labeled data. Since 2012, there have been significant advances in representation capabilities of the models and computational capabilities of GPUs. But the size of the biggest dataset has surprisingly remained constant. What will happen if we increase the dataset size by 10x or 100x? This paper takes a step towards clearing the clouds of mystery surrounding the "
         answer=data['answer']
-        q_emb = text2embedding(model, tokenizer, device, "The unstructured nature of point clouds demands that local aggregation be adaptive to different local structures.")
+        q_emb = text2embedding(model, tokenizer, device, question)
         # abstract_emb = text2embedding(model, tokenizer, device, graph.abstract)
         
     # print("finished generation now saving",graph.abstract)

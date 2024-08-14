@@ -1,4 +1,3 @@
-from nomic import embed
 import torch
 import numpy as np
 from pcst_fast import pcst_fast
@@ -10,8 +9,6 @@ import re
 from openai import OpenAI
 import warnings
 warnings.filterwarnings("ignore")
-
-# from sentence_transformers import SentenceTransformer
 
 
 def retrieval_via_pcst(graph, textual_nodes, q_emb, topk=3, topk_e=3, cost_e=0.5):
@@ -175,67 +172,44 @@ path = 'Sci-Retriever/dataset/3d-point-cloud-classification-on-scanobjectnn.pt'
 score=0
 
 dataset = pd.read_csv('/home/ubuntu/Sci-Retriever/dataset/sampleqa.csv')
-
 model, tokenizer, device = load_model[model_name]()
 text2embedding = load_text2embedding[model_name]
 graph=torch.load('/home/ubuntu/Sci-Retriever/dataset/3d-point-cloud-classification-on-scanobjectnn.pt')
-
-
-# abstract_emb= embed.text(
-#     texts=graph.abstract,
-#     model='nomic-embed-text-v1.5',
-#     task_type='search_document',
-#     dimensionality=768,
-# )
-
-# torch.save(abstract_emb, 'nomic_abs_emb_768.pt')
-abstract_emb=torch.load('nomic_abs_emb_768.pt')['embeddings']
-abstract_emb=torch.tensor(abstract_emb)
-print(type(abstract_emb))
+abstract_emb=torch.load("/home/ubuntu/Sci-Retriever/dataset/a.pt")
 graph.x=abstract_emb
-maxscore=0
-for topk in [20]:
-    score=0
-    for index in range(1):
+for topk in [5]:
+    for index in range(10):
         data=dataset.iloc[index]
         # print(data)
         question=data['question']
         answer=data['answer']
-        # q_emb = text2embedding(model, tokenizer, device, "The unstructured nature of point clouds demands that local aggregation be adaptive to different local structures.")
+        q_emb = text2embedding(model, tokenizer, device, question)
         # abstract_emb = text2embedding(model, tokenizer, device, graph.abstract)
-        q_emb= embed.text(
-            texts=["The success of deep learning in vision can be attributed to: (a) models with high capacity; (b) increased computational power; and (c) availability of large-scale labeled data. Since 2012, there have been significant advances in representation capabilities of the models and computational capabilities of GPUs. But the size of the biggest dataset has surprisingly remained constant. What will happen if we increase the dataset size by 10x or 100x? This paper takes a step towards clearing the clouds of mystery surrounding the"],
-            model='nomic-embed-text-v1.5',
-            task_type='search_query',
-            dimensionality=768,
-        )
-        q_emb=q_emb['embeddings']
-        q_emb=torch.tensor(q_emb)
-
-        subg,desc=retrieval_via_pcst(graph, graph.title, q_emb, topk=10, topk_e=0, cost_e=0.5)
-
+        
+    # print("finished generation now saving",graph.abstract)
+    # torch.save(abstract_emb,"/home/ubuntu/Sci-Retriever/dataset/a.pt")
+        
+        subg,desc=retrieval_via_pcst(graph, graph.abstract, q_emb, topk=5, topk_e=0, cost_e=0.5)
+    # file_name = "desc.txt"
+    # with open(file_name, 'w') as file:
+    #     file.write(desc.to_string(index=False))
         print("running bm25")
         print(desc)
+        result= BM25(question, desc, 10)
+        # result=desc
+        with open(f"/home/ubuntu/Sci-Retriever/dataset/bm25/{index}.txt", 'w') as file:
+            file.write(result)
 
-    #     result=desc
-    #     with open(f"/home/ubuntu/Sci-Retriever/temp.txt", 'w') as file:
-    #         file.write(result)
-
-    #     client = OpenAI()
-    #     completion = client.chat.completions.create(
-    #     model="gpt-4o",
-    #     messages=[
-    #         {"role": "system", "content": "Answer the folowing question based on the information given."},
-    #         {"role": "user", "content": f"{question} {result}"}
-    #     ]
-    #     )
+        client = OpenAI()
+        completion = client.chat.completions.create(
+        model="gpt-4o",
+        messages=[
+            {"role": "system", "content": "Answer the folowing question based on the information given."},
+            {"role": "user", "content": f"{question} {result}"}
+        ]
+        )
         
-    #     file_name = "output.txt"
-    #     with open(f"/home/ubuntu/Sci-Retriever/dataset/chatgptanswers/{index}.txt", 'w') as file:
-    #         file.write(completion.choices[0].message.content)
-    #     if answer in completion.choices[0].message.content:
-    #         score+=1
-    #     if score>maxscore:
-    #         maxscore=score
-    #         maxk=topk
-    # print(score/len(dataset))
+        file_name = "output.txt"
+        with open(f"/home/ubuntu/Sci-Retriever/dataset/chatgptanswers/{index}.txt", 'w') as file:
+            file.write(completion.choices[0].message.content)
+        
